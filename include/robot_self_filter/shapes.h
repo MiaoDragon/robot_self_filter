@@ -40,6 +40,7 @@
 #include <cstdlib>
 #include <vector>
 #include <tf/LinearMath/Vector3.h>
+#include "OBJ_Loader.h"
 
 /** Definition of various shapes. No properties such as position are
     included. These are simply the descriptions and dimensions of
@@ -246,7 +247,9 @@ namespace shapes
 	recomputed and repeating vertices are identified. */
     Mesh* createMeshFromBinaryDAE(const char* filename);
 
-  
+    /** \brief author: Yinglong. */
+	Mesh* createMeshFromOBJ(const char* filename);
+
     /** \brief Create a copy of a shape */
     Shape* cloneShape(const Shape *shape);
 

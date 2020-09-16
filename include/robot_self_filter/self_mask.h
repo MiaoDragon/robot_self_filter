@@ -461,6 +461,7 @@ struct LinkInfo
           // from the geometric model, find the shape of each link of interest
           // and create a body from it, one that knows about poses and can 
           // check for point inclusion
+
           for (unsigned int i = 0 ; i < links.size() ; ++i)
           {
             const urdf::Link *link = urdfModel->getLink(links[i].name).get();
