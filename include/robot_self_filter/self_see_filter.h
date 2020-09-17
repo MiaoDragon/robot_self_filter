@@ -137,11 +137,15 @@ public:
    */
   virtual bool update(const PointCloud& data_in, PointCloud& data_out)
   {
+    ROS_INFO("data_in.points: %d", data_in.points.size());
     std::vector<int> keep(data_in.points.size());
     if(sensor_frame_.empty()) {
       sm_->maskContainment(data_in, keep);
+      ROS_INFO("maskContainment");
     } else {
       sm_->maskIntersection(data_in, sensor_frame_, min_sensor_dist_, keep);
+      ROS_INFO("maskIntersection");
+
     }	
     fillResult(data_in, keep, data_out);
     return true;
@@ -202,10 +206,13 @@ public:
     nan_point.x = std::numeric_limits<float>::quiet_NaN(); 
     nan_point.y = std::numeric_limits<float>::quiet_NaN();
     nan_point.z = std::numeric_limits<float>::quiet_NaN();
+    
+    int keep_num = 0;
     for (unsigned int i = 0 ; i < np ; ++i)
     {
       if (keep[i] == robot_self_filter::OUTSIDE)
       {
+        keep_num += 1;
         data_out.points.push_back(data_in.points[i]);
       }
       if (keep_organized_ && keep[i] != robot_self_filter::OUTSIDE)
@@ -213,6 +220,7 @@ public:
         data_out.points.push_back(nan_point);
       }
     }
+    ROS_INFO("number of points outside: %d", keep_num);
     if (keep_organized_) {
       data_out.width = data_in.width;
       data_out.height = data_in.height;

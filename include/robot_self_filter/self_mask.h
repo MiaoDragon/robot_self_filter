@@ -43,6 +43,9 @@
 #include <urdf/model.h>
 #include <resource_retriever/retriever.h>
 
+
+#include <ros/package.h>  // package to path
+
 namespace robot_self_filter
 {
 
@@ -117,7 +120,29 @@ struct LinkInfo
 			    if (ext == ".dae" || ext == ".DAE") {
 			      result = shapes::createMeshFromBinaryDAE(mesh->filename.c_str());
 			    }
-			    else {
+			    else if (ext == ".obj")
+          {
+            ROS_WARN("using .obj parser");
+            // parse the package:// path to absolute path
+            std::string abs_filename(mesh->filename);
+            std::size_t start_package_name_idx = abs_filename.find("://");
+            start_package_name_idx = start_package_name_idx + 3;
+            std::size_t end_package_name_idx = abs_filename.find("/", start_package_name_idx);
+            end_package_name_idx -= 1;
+            // obtain the path from resource path
+            std::string package_name = mesh->filename.substr(start_package_name_idx, end_package_name_idx-start_package_name_idx+1);
+            //ROS_WARN("package name: %s", package_name.c_str());
+            std::string package_path = ros::package::getPath(package_name);
+            //ROS_WARN("package path: %s", package_path.c_str());
+            // found is the position of ":"
+            abs_filename.replace(0, end_package_name_idx-0+1, package_path);
+            //ROS_WARN("after replace: %s", abs_filename.c_str());
+
+            result = shapes::createMeshFromOBJ(abs_filename.c_str());
+            ROS_WARN("succesfully loaded.");
+
+          } 
+          else {
 			      result = shapes::createMeshFromBinaryStlData(reinterpret_cast<char*>(res.data.get()), res.size);
 			    }
 			    if (result == NULL)
@@ -555,9 +580,12 @@ struct LinkInfo
     
           // we now decide which points we keep
           //#pragma omp parallel for schedule(dynamic) 
+          // tf::Vector3 pt = tf::Vector3(data_in.points[10].x, data_in.points[10].y, data_in.points[10].z);
+          // ROS_INFO("bound.center.distance2(pt): %f", bound.center.distance2(pt));
+          // ROS_INFO("radiusSquared: %f", radiusSquared);
           for (int i = 0 ; i < (int)np ; ++i)
           {
-            tf::Vector3 pt = tf::Vector3(data_in.points[i].x, data_in.points[i].y, data_in.points[i].z);
+            tf::Vector3 pt = tf::Vector3(data_in.points[10].x, data_in.points[10].y, data_in.points[10].z);
             int out = OUTSIDE;
             if (bound.center.distance2(pt) < radiusSquared)
               for (unsigned int j = 0 ; out == OUTSIDE && j < bs ; ++j)
@@ -585,21 +613,34 @@ struct LinkInfo
           //#pragma omp parallel for schedule(dynamic) 
           for (int i = 0 ; i < (int)np ; ++i)
           {
+            //bool print = false;
             bool print = false;
             //if(i%100 == 0) print = true;
             tf::Vector3 pt = tf::Vector3(data_in.points[i].x, data_in.points[i].y, data_in.points[i].z);
             int out = OUTSIDE;
 
-            // we first check is the point is in the unscaled body. 
-            // if it is, the point is definitely inside
-            if (bound.center.distance2(pt) < radiusSquared)
-              for (unsigned int j = 0 ; out == OUTSIDE && j < bs ; ++j)
-                if (bodies_[j].unscaledBody->containsPoint(pt)) {
-                  if(print)
-                    std::cout << "Point " << i << " in unscaled body part " << bodies_[j].name << std::endl;
-                  out = INSIDE;
-                }
+            // edit: we don't check unscaled body
+            // // we first check is the point is in the unscaled body. 
+            // // if it is, the point is definitely inside
+            // if (bound.center.distance2(pt) < radiusSquared)
+            //   for (unsigned int j = 0 ; out == OUTSIDE && j < bs ; ++j)
+            //   {
+                
+            //       if (print && i == 0)
+            //       {
+            //         std::cout << "unscale body: " << bodies_[j].name << "unscaled body scale: " << bodies_[j].unscaledBody->getScale() << std::endl;
+            //         std::cout << "unscale body: " << bodies_[j].name << "body scale: " << bodies_[j].body->getScale() << std::endl;
 
+            //       }
+            //     if (bodies_[j].unscaledBody->containsPoint(pt)) {
+            //       if(print && i==0)
+            //       {
+            //         std::cout << "Point " << i << " in unscaled body part " << bodies_[j].name << std::endl;
+            //         std::cout << "point vector: " << pt.getX() << ", " << pt.getY() << "," << pt.getZ() << std::endl;
+            //       }
+            //       out = INSIDE;
+            //     }
+            //   }
             // if the point is not inside the unscaled body,
             if (out == OUTSIDE)
             {

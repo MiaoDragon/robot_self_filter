@@ -108,11 +108,14 @@ private:
     if(frames_.empty())
     {
       ROS_DEBUG("No valid frames have been passed into the self filter. Using a callback that will just forward scans on.");
+      ROS_INFO("No valid frames have been passed into the self filter. Using a callback that will just forward scans on.");
+
       no_filter_sub_ = root_handle_.subscribe<sensor_msgs::PointCloud2>("cloud_in", 1, boost::bind(&SelfFilter::noFilterCallback, this, _1));
     }
     else
     {
       ROS_DEBUG("Valid frames were passed in. We'll filter them.");
+      ROS_INFO("Valid frames were passed in. We'll filter them.");
       sub_.subscribe(root_handle_, "cloud_in", max_queue_size_);
       mn_.reset(new tf::MessageFilter<sensor_msgs::PointCloud2>(sub_, tf_, "", max_queue_size_));
       mn_->setTargetFrames(frames_);
@@ -130,6 +133,7 @@ private:
   }
 
   void noFilterCallback(const sensor_msgs::PointCloud2::ConstPtr &cloud){
+    ROS_INFO("NoFilter Callback.");
     pointCloudPublisher_.publish(cloud);
     ROS_DEBUG("Self filter publishing unfiltered frame");
   }
@@ -166,7 +170,7 @@ private:
       input_size = cloud->points.size();
       output_size = out.points.size();
     }
-      
+    ROS_INFO("cloud callback");      
     double sec = (ros::WallTime::now() - tm).toSec();
     pointCloudPublisher_.publish(out2);
     ROS_DEBUG("Self filter: reduced %d points to %d points in %f seconds", input_size, output_size, sec);

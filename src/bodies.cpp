@@ -139,6 +139,9 @@ namespace bodies
 
 bool bodies::Sphere::containsPoint(const tf::Vector3 &p, bool verbose) const 
 {
+	// ROS_INFO("using sphere as containsPoint.");
+	// ROS_INFO("distance: %f, radius: %f", (m_center - p).length2(), m_radius2);
+
     return (m_center - p).length2() < m_radius2;
 }
 
@@ -223,6 +226,7 @@ bool bodies::Sphere::intersectsRay(const tf::Vector3& origin, const tf::Vector3&
 
 bool bodies::Cylinder::containsPoint(const tf::Vector3 &p, bool verbose) const 
 {
+	// ROS_INFO("using Cylinder as containsPoint.");
     tf::Vector3 v = p - m_center;		
     double pH = v.dot(m_normalH);
     
@@ -386,16 +390,19 @@ bool bodies::Box::containsPoint(const tf::Vector3 &p, bool verbose) const
       fprintf(stderr,"Actual: %f,%f,%f \nDesired: %f,%f,%f \nTolerance:%f,%f,%f\n",p.x(),p.y(),p.z(),m_center.x(),m_center.y(),m_center.z(),m_length2,m_width2,m_height2);*/
     tf::Vector3 v = p - m_center;
     double pL = v.dot(m_normalL);
-    
+	// ROS_INFO("using Box as containsPoint.");
+	// ROS_INFO("x: %f, max_x: %f", pL, m_length2);
     if (fabs(pL) > m_length2)
 	return false;
     
     double pW = v.dot(m_normalW);
-    
+	// ROS_INFO("y: %f, max_y: %f",pW, m_width2);
+
     if (fabs(pW) > m_width2)
 	return false;
     
     double pH = v.dot(m_normalH);
+	// ROS_INFO("z: %f, max_z: %f", pH, m_height2);
     
     if (fabs(pH) > m_height2)
 	return false;
@@ -709,6 +716,8 @@ bool bodies::ConvexMesh::containsPoint(const tf::Vector3 &p, bool verbose) const
 {
     if (m_boundingBox.containsPoint(p))
     {
+	// ROS_INFO("using ConvexMesh as containsPoint. m_scale: %f", m_scale);
+
 	tf::Vector3 ip(m_iPose * p);
 	ip = m_meshCenter + (ip - m_meshCenter) * m_scale;
 	return isPointInsidePlanes(ip);

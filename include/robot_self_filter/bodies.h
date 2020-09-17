@@ -43,6 +43,7 @@
 // #include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
 // #include <BulletCollision/CollisionShapes/btTriangleMesh.h>
 #include <vector>
+#include <ros/console.h>
 
 /**
    This set of classes allows quickly detecting whether a given point
