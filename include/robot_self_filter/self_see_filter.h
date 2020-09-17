@@ -103,7 +103,7 @@ public:
     }
     sm_ = new robot_self_filter::SelfMask<PointT>(tf_, links);
     if (!sensor_frame_.empty())
-      ROS_INFO("Self filter is removing shadow points for sensor in frame '%s'. Minimum distance to sensor is %f.", sensor_frame_.c_str(), min_sensor_dist_);
+      ROS_DEBUG("Self filter is removing shadow points for sensor in frame '%s'. Minimum distance to sensor is %f.", sensor_frame_.c_str(), min_sensor_dist_);
   }
     
   /** \brief Destructor to clean up
@@ -120,7 +120,7 @@ public:
     nh_.param("invert", invert_, false);
     
     if (invert_)
-      ROS_INFO("Inverting filter output");
+      ROS_DEBUG("Inverting filter output");
 	
     return true;
   }
@@ -137,14 +137,14 @@ public:
    */
   virtual bool update(const PointCloud& data_in, PointCloud& data_out)
   {
-    ROS_INFO("data_in.points: %d", data_in.points.size());
+    ROS_DEBUG("data_in.points: %d", data_in.points.size());
     std::vector<int> keep(data_in.points.size());
     if(sensor_frame_.empty()) {
       sm_->maskContainment(data_in, keep);
-      ROS_INFO("maskContainment");
+      ROS_DEBUG("maskContainment");
     } else {
       sm_->maskIntersection(data_in, sensor_frame_, min_sensor_dist_, keep);
-      ROS_INFO("maskIntersection");
+      ROS_DEBUG("maskIntersection");
 
     }	
     fillResult(data_in, keep, data_out);
@@ -220,7 +220,7 @@ public:
         data_out.points.push_back(nan_point);
       }
     }
-    ROS_INFO("number of points outside: %d", keep_num);
+    ROS_DEBUG("number of points outside: %d", keep_num);
     if (keep_organized_) {
       data_out.width = data_in.width;
       data_out.height = data_in.height;
